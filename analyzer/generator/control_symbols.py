@@ -36,6 +36,7 @@ class StateStorage:
         self.control_stack = list()
         self.normal_stack = list()
         self.escape_flag = False
+        self.last_is_control = True
 
     def push_control(self, node):
         self.control_stack.append(node)
@@ -104,7 +105,7 @@ def _compile_symbol_list(symbols):
 SYMBOL_PROPS = _compile_symbol_list(CONTROL_SYMBOLS)
 
 
-def process_escape(storage: StateStorage, char):
+def process_escape(storage: StateStorage):
     storage.escape_flag = True
     # process
 
@@ -119,6 +120,8 @@ def process_quote(storage: StateStorage):
         storage.pop_control()
         last_control = storage.top_control()
         while last_control not in QUOTES_LEFT:
+            if last_control is None:
+                raise ValueError('Extra quote detected!')
             if SYMBOL_PROPS[last_control][0] <= SYMBOL_PROPS[QUOTES_LEFT[0]][0]:
                 handler = function_table[last_control]
                 handler(storage)
@@ -130,12 +133,16 @@ def process_closure(storage: StateStorage):
     control_char = storage.pop_control()
     node1: Node = storage.pop_normal()
     node1_section_end: Node = node1.section_end
-    warp_left = Node()
+
     warp_right = Node()
+    warp_left = Node().set_section_end(warp_right)
     warp_left.join(node1)
     warp_left.join(warp_right)
+
     node1_section_end.join(warp_right)
     node1_section_end.join(node1)
+
+    storage.push_normal(warp_left)
     storage.node_list.append(warp_left)
     storage.node_list.append(warp_right)
 
@@ -144,14 +151,15 @@ def process_pclosure(storage: StateStorage):
     control_char = storage.pop_control()
     node1: Node = storage.pop_normal()
     node1_section_end: Node = node1.section_end
-    warp_left = Node()
     warp_right = Node()
+    warp_left = Node().set_section_end(warp_right)
     warp_left.join(node1)
     node1_section_end.join(warp_right)
     node1_section_end.join(node1)
+
     storage.node_list.append(warp_left)
     storage.node_list.append(warp_right)
-    storage.push_normal(node1)
+    storage.push_normal(warp_left)
 
 
 def process_and(storage: StateStorage):
@@ -160,10 +168,11 @@ def process_and(storage: StateStorage):
     node1: Node = storage.pop_normal()
     node1_end: Node = node1.section_end
     node2_end: Node = node2.section_end
-    node1.set_section_end(node2.section_end)
+
     node1_end.next = node2.next
     node1_end.accept = node2.accept
     node1.set_section_end(node2_end)
+
     storage.push_normal(node1)
     storage.node_list.remove(node2)
 
@@ -201,6 +210,11 @@ def control_handler(storage: StateStorage, char):
         storage.escape_flag = False
         return
 
+    if char is not None:
+        if char in ESCAPE_CHAR:
+            process_escape(storage)
+            return
+
     # 判断之前的符号是否优先执行, 将优先级较高的都处理掉
     last_control = storage.top_control()
     while last_control is not None:
@@ -212,6 +226,12 @@ def control_handler(storage: StateStorage, char):
 
     # 然后当前控制符进栈等待
     storage.push_control(char)
+
+    # 如果单目, 则先执行
+    if SYMBOL_PROPS[char][1] == 1:
+        handler = function_table[char]
+        handler(storage)
+        storage.last_is_control = False
 
 
 def normal_handler(storage, char):
