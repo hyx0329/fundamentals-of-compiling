@@ -62,16 +62,20 @@ class NFA:
         self.node_list = state.node_list
 
         # TODO: 转化为表格
+        # 编号
         _mark_graph(self.start_node, 0)
-
+        # 排序
         self.node_list = sorted(self.node_list, key=lambda x: x.id)
+
         self.nfa_table = list()
         for sub_node in self.node_list:
             next_ids = list()
             if isinstance(sub_node.next, list):
+                if len(sub_node.next) == 0:
+                    next_ids.append('ACC')
                 for next_node in sub_node.next:
                     next_ids.append(next_node.id)
-            self.nfa_table.append(next_node)
+            self.nfa_table.append(next_ids)
         pass
 
 class DFA:
