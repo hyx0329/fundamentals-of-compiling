@@ -30,7 +30,7 @@ if __name__ == '__main__':
             try:
                 if_match = dfa_obj.match(test_str)
             except ValueError as e:
-                err_msg = e.args[0]
+                err_msg = ' '.join((e.args[0],"'{}' at position {}.".format(e.args[1], e.args[2]+1)))
             
             if if_match:
                 print("\"{}\" match the regex.".format(test_str))

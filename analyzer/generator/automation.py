@@ -109,8 +109,8 @@ class NFA:
                 current_pos += 1
             # 收尾操作, 清空栈
             control_handler(state, None)
-        except:
-            raise ValueError('Error occured at position {}'.format(current_pos))
+        except Exception as e:
+            raise ValueError('Error occured at position {}, {}'.format(current_pos, e.args[0]))
 
         # 记录状态
         self.start_node: Node = state.normal_stack.pop()
@@ -382,10 +382,12 @@ class DFA:
             try:
                 char_id = self.character_set.index(current_char)
             except ValueError:
-                raise ValueError("Unexpected character '{}' at position '{}'".format(current_char, current_pos))
+                raise ValueError("Unexpected character", current_char, current_pos)
                 # if_match = False
-                break
+                # break
             current_state = self.dfa_table[current_state][char_id]
+            if current_state is None:
+                raise ValueError("Unmatched character", current_char, current_pos)
             current_pos += 1
         
         # 读完，再判断终止状态

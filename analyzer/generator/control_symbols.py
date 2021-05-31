@@ -111,22 +111,24 @@ def process_escape(storage: StateStorage):
 
 
 def process_quote(storage: StateStorage):
-    control_char = storage.top_control()
+    control_char = storage.pop_control()
     if control_char in QUOTES_LEFT:
         # 左括号忽略
         return
     else:
         # 右括号, 处理所有的内容直到遇到括号
-        storage.pop_control()
         last_control = storage.top_control()
-        while last_control not in QUOTES_LEFT:
-            if last_control is None:
+        if last_control is None:
                 raise ValueError('Extra quote detected!')
+        while last_control not in QUOTES_LEFT:
             if SYMBOL_PROPS[last_control][0] <= SYMBOL_PROPS[QUOTES_LEFT[0]][0]:
                 handler = function_table[last_control]
                 handler(storage)
             last_control = storage.top_control()
-        storage.pop_control()
+            if last_control is None:
+                raise ValueError('Extra quote detected!')
+        handler = function_table[last_control]
+        handler(storage)
 
 
 def process_closure(storage: StateStorage):
