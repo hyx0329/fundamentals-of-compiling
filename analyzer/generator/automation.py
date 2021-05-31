@@ -382,8 +382,8 @@ class DFA:
             try:
                 char_id = self.character_set.index(current_char)
             except ValueError:
-                # raise ValueError("Unexpected character '{}' at position '{}'".format(current_char, current_pos))
-                if_match = False
+                raise ValueError("Unexpected character '{}' at position '{}'".format(current_char, current_pos))
+                # if_match = False
                 break
             current_state = self.dfa_table[current_state][char_id]
             current_pos += 1
