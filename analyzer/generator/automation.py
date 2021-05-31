@@ -2,6 +2,7 @@ from .node import Node
 from .control_symbols import *
 
 from collections import deque
+from itertools import groupby
 
 
 def _mark_graph(root: Node, number: int) -> int:
@@ -131,8 +132,10 @@ class DFA:
     def __init__(self, nfa_object: NFA = None):
         self.nfa_object = nfa_object
         self.dfa_table = list()
+        self.start_id = 0
         self.terminal_set = set()
-        self.character_set = None
+        self.character_set = None  # list, 字符表
+        self.state_set = None
 
     def compile(self, nfa_object: NFA = None):
         if nfa_object is not None:
@@ -193,6 +196,113 @@ class DFA:
         for i in range(len(dstates_props)):
             if dstates_props[i][1] == True:
                 self.terminal_set.add(i)
+        # 记录一下所有节点，尽管没必要
+        self.state_set = set([i for i in range(len(self.dfa_table))])
     
     def minimize(self):
-        pass
+        if self.state_set is None:
+            self.compile()
+        
+        # 计算分区    
+        partition = [
+                    self.state_set - self.terminal_set,
+                    self.terminal_set
+                ]
+        part_queue = deque()
+        for part in partition:
+            part_queue.append(part)
+        
+        while len(part_queue) > 0:
+            part = part_queue.popleft()
+            state_to_group_id = dict()
+            # 检测各个状态下接受各个字符后的下一组
+            for state in part:
+                state_to_group_id[state] = list()
+                for jump in self.dfa_table[state]:
+                    for i in range(len(partition)):
+                        if jump in partition[i]:
+                            state_to_group_id[state].append(i)
+                            break
+            # 合并完全相同的组
+            groups = sorted(list(state_to_group_id.values()))
+            groups = [ k for k,_ in groupby(groups)]
+
+            # 如果结果只有一个组，则继续
+            if len(groups) == 1:
+                continue
+
+            # 否则将新生成的组加入队列，并修改原来的分区列表
+            new_subgroups = list()
+            for g in groups:
+                subgroup = set()
+                for state, v in zip(state_to_group_id.keys(), state_to_group_id.values()):
+                    if v == g:
+                        subgroup.add(state)
+                new_subgroups.append(subgroup)
+            partition.remove(part)
+            for p in new_subgroups:
+                partition.append(p)
+                part_queue.append(p)
+
+        # 分区完毕，进行转换，重映射
+        # 排个序好看，另外元组自己会升序排序
+        new_state_lists = sorted([list(s) for s in partition])
+        new_state_sets = [set(s) for s in new_state_lists]
+        new_terminal_set = set()
+        new_start_id = 0
+        for i in range(len(new_state_sets)):
+            if not self.terminal_set.isdisjoint(new_state_sets[i]):
+                new_terminal_set.add(i)
+            elif self.start_id in new_state_sets[i]:
+                new_start_id = i
+        
+        # 构建新的跳转表
+        set_to_set_id = list()
+        # 检测各个状态下接受各个字符后的下一组
+        for state_set in new_state_sets:
+            state = next(iter(state_set))  # 取一个原状态
+            state_new_jump = list()
+            for jump in self.dfa_table[state]:
+                for i in range(len(new_state_sets)):
+                    if jump in new_state_sets[i]:
+                        state_new_jump.append(i)
+                        break
+            set_to_set_id.append(state_new_jump)
+
+        # 存储与更新结果
+        self.dfa_table = set_to_set_id
+        self.terminal_set = new_terminal_set
+        self.start_id = new_start_id
+        self.state_set = set([i for i in range(len(set_to_set_id))])
+
+    def match(self, test_str: str = ''):
+        """
+        :param test_str: 输入待检测字符串
+        """
+        if not isinstance(test_str, str):
+            raise ValueError("Unexpected data type '{}'".format(type(test_str)))
+
+        if_match = False
+
+        # 依次读取，状态跳转
+        current_pos = 0
+        string_length = len(test_str)
+        current_state = self.start_id
+        while current_pos < string_length:
+            current_char = test_str[current_pos]
+            try:
+                char_id = self.character_set.index(current_char)
+            except ValueError:
+                # raise ValueError("Unexpected character '{}' at position '{}'".format(current_char, current_pos))
+                if_match = False
+                break
+            current_state = self.dfa_table[current_state][char_id]
+            current_pos += 1
+        
+        # 读完，再判断终止状态
+        if current_pos == string_length:
+            if current_state in self.terminal_set:
+                if_match = True
+
+        return if_match
+            
