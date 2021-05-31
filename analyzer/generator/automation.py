@@ -22,11 +22,64 @@ def _mark_graph(root: Node, number: int) -> int:
 
 class NFA:
     def __init__(self, data: str = None):
+        """
+        节点存储跳转条件及目标，所有节点均存放在节点列表中
+        nfa_table记录了各个节点的下一跳
+        start_node是开始节点, end_node是终止节点
+        node_list最后会排序
+        """
         self.node_list = None
         self.string_data = data
         self.nfa_table = None
         self.start_node = None
         self.end_node = None
+    
+    def print_table(self):
+        if self.nfa_table is None:
+            self.compile()
+        
+        character_set = list(set([node.accept for node in self.node_list]))
+
+        def _convert_str(data):
+            if data is None:
+                return "None"
+            else:
+                return str(data)
+
+        # 表头
+        format_string = '{:>8}|'
+        separator_string = '{:=>8}|'
+        # 分割线
+        print('\n|'+separator_string.format(''), end='')
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        print()
+        # 表头内容
+        print('|'+format_string.format(''), end='')
+        for char in character_set:
+            print(format_string.format(_convert_str(char)), end='')
+        print('\n|'+separator_string.format(''), end='')
+        # 分割线
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        print()
+        
+        # 表格内容
+        for state in range(len(self.nfa_table)):
+            print('|', end='')
+            print(format_string.format(state), end='')
+            for char in character_set:
+                if self.node_list[state].accept == char:
+                    state_string = ','.join(map(str, self.nfa_table[state]))
+                    print(format_string.format(state_string), end='')
+                else:
+                    print(format_string.format(''), end='')
+            print()
+        # 分割线
+        print('|'+separator_string.format(''), end='')
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        print()
 
     def compile(self, data: str = None):
         if isinstance(data, str):
@@ -35,7 +88,7 @@ class NFA:
 
         # 准备构建NFA
         state = StateStorage()
-        state.last_is_control = True
+        # state.last_is_control = True
         current_pos = 0
         data_length = len(self.string_data)
         try:
@@ -45,7 +98,7 @@ class NFA:
 
                 # 对于控制字符
                 if next_char in SYMBOL_PROPS.keys():
-                    state.last_is_control = True if not state.escape_flag else False
+                    # state.last_is_control = True if not state.escape_flag else False
                     control_handler(state, next_char)
                 # 对于一般字符
                 else:
@@ -95,7 +148,6 @@ def _gen_closure(node_id: int, nfa_accept_list: (list, tuple), nfa_jump_table: (
     node_queue = deque()
     node_queue.append(node_id)
     closure = set()
-    end_flag = False
     while len(node_queue) > 0:
         next_node_id = node_queue.popleft()
         if next_node_id in closure:
@@ -137,6 +189,42 @@ class DFA:
         self.character_set = None  # list, 字符表
         self.state_set = None
 
+    def print_table(self):
+        if self.character_set is None:
+            self.compile
+        
+        # 表头
+        format_string = '{:>8}|'
+        separator_string = '{:=>8}|'
+        character_set = self.character_set
+        # 分割线
+        print('\n|'+separator_string.format(''), end='')
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        # 表头内容
+        print('\n|'+format_string.format(''), end='')
+        for char in character_set:
+            print(format_string.format(char), end='')
+        print('\n|'+separator_string.format(''), end='')
+        # 分割线
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        print()
+        
+        # 表格内容
+        for state in range(len(self.dfa_table)):
+            print('|', end='')
+            print(format_string.format(state), end='')
+            for next_state in self.dfa_table[state]:
+                print(format_string.format(str(next_state)), end='')
+            print()
+        # 分割线
+        print('|'+separator_string.format(''), end='')
+        for _ in range(len(character_set)):
+            print(separator_string.format(''), end='')
+        print()
+        
+
     def compile(self, nfa_object: NFA = None):
         if nfa_object is not None:
             self.nfa_object = nfa_object
@@ -149,7 +237,8 @@ class DFA:
         character_set = set(nfa_accept_list)
         if None in character_set:
             character_set.remove(None)
-        terminal_state = len(nfa_jump_table) - 1
+        
+        terminal_state = self.nfa_object.end_node.id
 
         initial_state_set = _gen_closure(0, nfa_accept_list, nfa_jump_table)
 

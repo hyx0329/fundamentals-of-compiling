@@ -208,6 +208,7 @@ def control_handler(storage: StateStorage, char):
     if storage.escape_flag:
         normal_handler(storage, char)
         storage.escape_flag = False
+        storage.last_is_control = False
         return
 
     if char is not None:
@@ -226,6 +227,7 @@ def control_handler(storage: StateStorage, char):
 
     # 然后当前控制符进栈等待
     storage.push_control(char)
+    storage.last_is_control = True
 
     # 如果单目, 则先执行
     if SYMBOL_PROPS[char][1] == 1:
