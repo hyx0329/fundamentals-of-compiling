@@ -22,7 +22,7 @@ if __name__ == '__main__':
         while True:
             test_str = input("Input string(empty input to quit): ")
             if_match = False
-            err_msg = ''
+            err_msg = 'Reach the end.'
 
             if test_str == '':
                 return
@@ -31,7 +31,7 @@ if __name__ == '__main__':
                 if_match = dfa_obj.match(test_str)
             except ValueError as e:
                 err_msg = ' '.join((e.args[0],"'{}' at position {}.".format(e.args[1], e.args[2]+1)))
-            
+
             if if_match:
                 print("\"{}\" match the regex.".format(test_str))
             else:
