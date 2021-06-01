@@ -249,6 +249,7 @@ class DFA:
         dstates_list.append(initial_state_set)
         dstates_queue.append(initial_state_set)
 
+        # 开始不断寻找新的空闭包, 找到新的就加入队列
         while len(dstates_queue) > 0:
             new_dstate = dstates_queue.popleft()
             jump_table = dict()
@@ -301,6 +302,7 @@ class DFA:
         for part in partition:
             part_queue.append(part)
         
+        # 开始分裂
         while len(part_queue) > 0:
             part = part_queue.popleft()
             state_to_group_id = dict()
