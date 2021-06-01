@@ -20,22 +20,16 @@ if __name__ == '__main__':
 
     def _do_string_test(dfa_obj):
         while True:
-            test_str = input("Input string(empty input to quit): ")
-            if_match = False
-            err_msg = 'Reach the end.'
+            test_str = input("Input string(empty string to quit): ")
+            if len(test_str) == 0:
+                break
 
-            if test_str == '':
-                return
-
-            try:
-                if_match = dfa_obj.match(test_str)
-            except ValueError as e:
-                err_msg = ' '.join((e.args[0],"'{}' at position {}.".format(e.args[1], e.args[2]+1)))
+            if_match, position = dfa_obj.match(test_str)
 
             if if_match:
                 print("\"{}\" match the regex.".format(test_str))
             else:
-                print("\"{}\" does not match the regex. {}".format(test_str, err_msg))
+                print("\"{}\" does not match the regex. Error at position {}".format(test_str, position+1))
 
     def _check_regex():
         if len(regex_str) > 0:

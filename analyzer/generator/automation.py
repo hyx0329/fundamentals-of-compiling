@@ -367,7 +367,7 @@ class DFA:
         self.start_id = new_start_id
         self.state_set = set([i for i in range(len(set_to_set_id))])
 
-    def match(self, test_str: str = ''):
+    def match(self, test_str: str = '') -> list:
         """
         :param test_str: 输入待检测字符串
         """
@@ -385,18 +385,22 @@ class DFA:
             try:
                 char_id = self.character_set.index(current_char)
             except ValueError:
-                raise ValueError("Unexpected character", current_char, current_pos)
-                # if_match = False
-                # break
+                # raise ValueError("Unexpected character", current_char, current_pos)
+                if_match = False
+                break
+
             current_state = self.dfa_table[current_state][char_id]
             if current_state is None:
-                raise ValueError("Unmatched character", current_char, current_pos)
+                # raise ValueError("Unmatched character", current_char, current_pos)
+                if_match = False
+                break
+
             current_pos += 1
         
-        # 读完，再判断终止状态
+        # 检测读完，再判断终止状态
         if current_pos == string_length:
             if current_state in self.terminal_set:
                 if_match = True
 
-        return if_match
+        return if_match, current_pos
             
