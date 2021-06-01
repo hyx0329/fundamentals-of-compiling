@@ -116,12 +116,14 @@ def process_quote(storage: StateStorage):
         return
     else:
         # 右括号, 处理所有的内容直到遇到左括号
-        if storage.last_is_control:
-            raise ValueError('Unacceptable quote!')
         last_control = storage.top_control()
         if last_control is None:
-                raise ValueError('Extra quote detected!')
+            raise ValueError('Extra quote detected!')
+        if storage.last_is_control and last_control not in QUOTES_LEFT:  # 检查是否是右括号紧跟其它操作符, 这不合法
+            raise ValueError('Unacceptable quote!')
+        empty_quote = True
         while last_control not in QUOTES_LEFT:
+            empty_quote = False
             handler = function_table[last_control]
             handler(storage)
             last_control = storage.top_control()
@@ -129,6 +131,8 @@ def process_quote(storage: StateStorage):
                 raise ValueError('Extra quote detected!')
         handler = function_table[last_control]
         handler(storage)
+        if empty_quote and storage.last_is_control and storage.top_control() == '&':  # 空括号需要删除多余的'&'
+            storage.pop_control()
 
 
 def process_closure(storage: StateStorage):
