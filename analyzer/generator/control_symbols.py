@@ -247,7 +247,10 @@ def control_handler(storage: StateStorage, char):
     if char in QUOTES_RIGHT:
         handler = function_table[char]
         handler(storage)
-        storage.last_is_control = False
+        if storage.top_control() is None:
+            storage.last_is_control = True
+        else:
+            storage.last_is_control = False
         return
     
     # 标记符号状况
