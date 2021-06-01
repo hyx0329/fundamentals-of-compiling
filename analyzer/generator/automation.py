@@ -351,10 +351,14 @@ class DFA:
             state = next(iter(state_set))  # 取一个原状态
             state_new_jump = list()
             for jump in self.dfa_table[state]:
+                accepted_flag = False
                 for i in range(len(new_state_sets)):
                     if jump in new_state_sets[i]:
                         state_new_jump.append(i)
+                        accepted_flag = True
                         break
+                if not accepted_flag:  # 填充不接受的跳转
+                    state_new_jump.append(None)
             set_to_set_id.append(state_new_jump)
 
         # 存储与更新结果

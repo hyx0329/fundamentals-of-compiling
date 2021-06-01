@@ -26,9 +26,9 @@ from .node import Node
     + 方法2: 后续判断上一个字符是否是普通字符
 """
 
-ESCAPE_CHAR = '\\'
-QUOTES_LEFT = '('
-QUOTES_RIGHT = ')'
+ESCAPE_CHAR = set('\\')
+QUOTES_LEFT = set('(')
+QUOTES_RIGHT = set(')')
 
 class StateStorage:
     def __init__(self):
@@ -81,14 +81,13 @@ def do_nothing(*args, **kwargs):
 
 # 控制符号列表, 按优先级排序
 CONTROL_SYMBOLS = (
-    (tuple(ESCAPE_CHAR), 1),  # 转义符
-    (tuple(QUOTES_RIGHT), 0),  # 括号之类
-    (tuple('*+'), 1),  # 单目, 左结合
+    (set(ESCAPE_CHAR), 1),  # 转义符
+    (set(QUOTES_RIGHT.union(QUOTES_LEFT)), 0),  # 括号之类, 优先级较高, 但左括号不优先执行
+    (set('*+'), 1),  # 单目, 左结合
     # tuple(),  # 单目, 右结合
-    (tuple('&'), 2),  # 双目
-    (tuple('|'), 2),
-    (tuple(QUOTES_LEFT), 0),
-    (tuple([None]), 0)  # 以空作为结尾
+    (set('&'), 2),  # 双目
+    (set('|'), 2),
+    (set([None]), 0)  # 以空作为结尾
 )
 
 
@@ -116,14 +115,15 @@ def process_quote(storage: StateStorage):
         # 左括号忽略
         return
     else:
-        # 右括号, 处理所有的内容直到遇到括号
+        # 右括号, 处理所有的内容直到遇到左括号
+        if storage.last_is_control:
+            raise ValueError('Unacceptable quote!')
         last_control = storage.top_control()
         if last_control is None:
                 raise ValueError('Extra quote detected!')
         while last_control not in QUOTES_LEFT:
-            if SYMBOL_PROPS[last_control][0] <= SYMBOL_PROPS[QUOTES_LEFT[0]][0]:
-                handler = function_table[last_control]
-                handler(storage)
+            handler = function_table[last_control]
+            handler(storage)
             last_control = storage.top_control()
             if last_control is None:
                 raise ValueError('Extra quote detected!')
@@ -223,12 +223,30 @@ def control_handler(storage: StateStorage, char):
     while last_control is not None:
         if SYMBOL_PROPS[last_control][0] > SYMBOL_PROPS[char][0]:
             break
+        if last_control in QUOTES_LEFT:  # 防止左括号吃左括号
+            break
         handler = function_table[last_control]
         handler(storage)
         last_control = storage.top_control()
 
+    # 这里为左括号添加额外的连接符
+    if char in QUOTES_LEFT:
+        if not storage.last_is_control:
+            storage.push_control('&')
+    
     # 然后当前控制符进栈等待
     storage.push_control(char)
+
+    # 如果右括号, 则直接执行
+    # 右括号处理程序利用了上一输入符号类别判断了括号的合法性
+    # 所以标记符号状况在它后面
+    if char in QUOTES_RIGHT:
+        handler = function_table[char]
+        handler(storage)
+        storage.last_is_control = False
+        return
+    
+    # 标记符号状况
     storage.last_is_control = True
 
     # 如果单目, 则先执行
@@ -236,6 +254,8 @@ def control_handler(storage: StateStorage, char):
         handler = function_table[char]
         handler(storage)
         storage.last_is_control = False
+    
+    
 
 
 def normal_handler(storage, char):
