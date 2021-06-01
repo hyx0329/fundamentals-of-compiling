@@ -54,10 +54,11 @@ if __name__ == '__main__':
             break
         elif choice == '1':
             regex_str = input('Input your regular expression: ')
-            nfa_obj = NFA(regex_str)
-            nfa_obj.compile()
-            dfa_obj = DFA(nfa_obj)
-            dfa_obj.compile()
+            if _check_regex():
+                nfa_obj = NFA(regex_str)
+                nfa_obj.compile()
+                dfa_obj = DFA(nfa_obj)
+                dfa_obj.compile()
             continue
         elif _check_regex():
             if choice == '2':
