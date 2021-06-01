@@ -102,10 +102,7 @@ class NFA:
                     control_handler(state, next_char)
                 # 对于一般字符
                 else:
-                    if not state.last_is_control:
-                        control_handler(state, '&')
                     normal_handler(state, next_char)
-                    state.last_is_control = False
                 current_pos += 1
             # 收尾操作, 清空栈
             control_handler(state, None)

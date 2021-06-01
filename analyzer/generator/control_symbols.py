@@ -239,8 +239,11 @@ def control_handler(storage: StateStorage, char):
 
 
 def normal_handler(storage, char):
+    if not storage.last_is_control:
+        control_handler(storage, '&')
     Node2 = Node()
     Node1 = Node(char).join(Node2).set_section_end(Node2)
     storage.push_normal(Node1)
     storage.node_list.append(Node1)
     storage.node_list.append(Node2)
+    storage.last_is_control = False
