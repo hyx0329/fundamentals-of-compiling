@@ -1,5 +1,6 @@
 from .node import Node
 from .control_symbols import *
+from .matcher import Matcher
 
 from collections import deque
 from itertools import groupby
@@ -403,4 +404,8 @@ class DFA:
                 if_match = True
 
         return if_match, current_pos
-            
+
+    def get_matcher(self):
+        matcher = Matcher(self.dfa_table, self.character_set, self.start_id, self.terminal_set)
+        return matcher
+        
