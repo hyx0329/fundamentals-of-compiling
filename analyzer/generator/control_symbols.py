@@ -83,7 +83,7 @@ def do_nothing(*args, **kwargs):
 CONTROL_SYMBOLS = (
     (set(ESCAPE_CHAR), 1),  # 转义符
     (set(QUOTES_RIGHT.union(QUOTES_LEFT)), 0),  # 括号之类, 优先级较高, 但左括号不优先执行
-    (set('*+'), 1),  # 单目, 左结合
+    (set('*+?'), 1),  # 单目, 左结合
     # tuple(),  # 单目, 右结合
     (set('&'), 2),  # 双目
     (set('|'), 2),
@@ -197,12 +197,26 @@ def process_or(storage: StateStorage):
     storage.node_list.append(warp_right)
 
 
+def process_qmark(storage: StateStorage):
+    control_char = storage.pop_control()
+    node1 = storage.pop_normal()
+    node1_end = node1.section_end
+    warp_right = Node()
+    warp_left = Node().join(node1).join(warp_right)
+    warp_left.set_section_end(warp_right)
+    node1_end.join(warp_right)
+    storage.node_list.append(warp_left)
+    storage.node_list.append(warp_right)
+    storage.push_normal(warp_left)
+
+
 function_table = {
     '\\': process_escape,
     '(': process_quote,
     ')': process_quote,
     '*': process_closure,
     '+': process_pclosure,
+    '?': process_qmark,
     '&': process_and,
     '|': process_or,
     None: do_nothing
