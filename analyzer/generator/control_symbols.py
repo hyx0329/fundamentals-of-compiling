@@ -261,7 +261,7 @@ def control_handler(storage: StateStorage, char):
     if char in QUOTES_RIGHT:
         handler = function_table[char]
         handler(storage)
-        if storage.top_control() is None:
+        if storage.top_control() is None and storage.if_normal_empty():
             storage.last_is_control = True
         else:
             storage.last_is_control = False
