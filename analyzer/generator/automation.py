@@ -86,6 +86,7 @@ class NFA:
         if isinstance(data, str):
             self.string_data = data
         assert isinstance(self.string_data, str), "No data provided!"
+        assert len(self.string_data) > 0, "Empty string is not supported!"
 
         # 准备构建NFA
         state = StateStorage()
@@ -408,4 +409,3 @@ class DFA:
     def get_matcher(self):
         matcher = Matcher(self.dfa_table, self.character_set, self.start_id, self.terminal_set)
         return matcher
-        
