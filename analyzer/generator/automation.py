@@ -131,7 +131,9 @@ class NFA:
                 for next_node in sub_node.next:
                     next_ids.append(next_node.id)
             self.nfa_table.append(next_ids)
-        pass
+        
+        # 用于链式调用
+        return self
 
 
 def _gen_closure(node_id: int, nfa_accept_list: (list, tuple), nfa_jump_table: (list, tuple), accept=None):
@@ -287,6 +289,9 @@ class DFA:
                 self.terminal_set.add(i)
         # 记录一下所有节点，尽管没必要
         self.state_set = set([i for i in range(len(self.dfa_table))])
+
+        # 用于链式调用
+        return self
     
     def minimize(self):
         if self.state_set is None:
@@ -368,6 +373,9 @@ class DFA:
         self.terminal_set = new_terminal_set
         self.start_id = new_start_id
         self.state_set = set([i for i in range(len(set_to_set_id))])
+        
+        # 用于链式调用
+        return self
 
     def match(self, test_str: str = '') -> list:
         """

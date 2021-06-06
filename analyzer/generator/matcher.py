@@ -92,6 +92,10 @@ class BatchMatcher:
         read_pos = 0
         string_length = len(data)
 
+        if string_length == 0:
+            symbol_list.append(['', -1])  # -1 表示空串
+            return symbol_list
+
         while read_pos < string_length:
             section_read_position = read_pos
             candidate_stack = list()
@@ -119,7 +123,7 @@ class BatchMatcher:
 
             if len(candidate_stack) == 0:
                 current_char = data[read_pos]
-                # add unknown symbol
+                # 用额外的ID表示未知符号
                 symbol_list.append([current_char, len(self._matchers)])
                 read_pos += 1
                 continue
