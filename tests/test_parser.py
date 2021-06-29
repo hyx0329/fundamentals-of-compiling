@@ -1,4 +1,4 @@
-from lexer.grammar.parser import PredefinedParser
+from analyzer.lexer.parser import PredefinedParser
 
 def test_parser():
     parser = PredefinedParser()
