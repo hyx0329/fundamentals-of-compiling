@@ -1,4 +1,4 @@
-from analyzer.generator.automation import NFA, DFA
+from analyzer.lexer.automation import NFA, DFA
 
 example1 = '(a|b)*bb'
 
