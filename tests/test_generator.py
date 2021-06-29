@@ -1,7 +1,7 @@
 import pytest
 import re
 
-from analyzer.generator.automation import NFA, DFA
+from lexer.generator.automation import NFA, DFA
 from .data_to_test import DataToTest
 
 def test_overall():
