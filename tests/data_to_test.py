@@ -9,12 +9,23 @@ class RgxTestData:
 
 class ParserTestData:
     first_set_test = {
-        'S': ['aABe'],
-        'A': ['b','Abc'],
-        'B': ['d']
+        'L': ['E;L', ''],
+        'E': ['TG'],
+        'G': ['+TG', '-TG', ''],
+        'T': ['FH'],
+        'H': ['*FH', '/FH', r'%FH', ''],
+        'F': ['(E)', 'I', 'N']
     }
     first_set_test_ans = {
-        'S': set(['a']),
-        'A': set(['b']),
-        'B': set(['d']),
+        'L': set(['', '(', 'I', 'N']),
+        'E': set(['(', 'I', 'N']),
+        'G': set(['+', '-', '']),
+        'T': set(['(', 'I', 'N']),
+        'H': set(['*', '/', '%', '']),
+        'F': set(['(', 'I', 'N'])
+    }
+    follow_set_test_ans = {
+        'S': set([]),
+        'A': set([]),
+        'B': set([])
     }

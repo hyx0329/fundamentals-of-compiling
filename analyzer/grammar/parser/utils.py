@@ -79,7 +79,9 @@ def get_first_set(data):
                     after = record.get(k, set([k]))
                     if '' in before:
                         addition.update(after)
-                    before = after
+                        before = after
+                    else:
+                        break
                 if '' in before:
                     addition.add('')
                 if record[key] >= addition:
@@ -89,8 +91,23 @@ def get_first_set(data):
     return record
 
 
-def get_follow_set(tables):
-    pass
+def get_follow_set(data, start=None):
+    record = {k: set() for k in data.keys()}
+    if start is None:
+        start = next(iter(data.keys()))
+    record[start].add('TERM')
+    non_terms = set(data.keys())
+    changed_flag = True
+    first_record = get_first_set(data)
+    while changed_flag:
+        changed_flag = False
+        for key, value in zip(data.keys(), data.values()):
+            for v in value:
+                first = v[0]
+                mid = [1]
+                for i in range(len(v) - 1):
+                    pass
+
 
 
 if __name__ == "__main__":
