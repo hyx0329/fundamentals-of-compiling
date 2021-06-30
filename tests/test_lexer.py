@@ -2,7 +2,7 @@ import pytest
 import re
 
 from analyzer.lexer.automation import NFA, DFA
-from .data_to_test import DataToTest
+from .data_to_test import RgxTestData as DataToTest
 
 def test_overall():
     data_to_test = DataToTest.value

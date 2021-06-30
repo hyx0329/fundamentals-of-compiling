@@ -5,7 +5,7 @@
     + 其它符号都是终结符
 """
 
-from .parser import PredefinedParser
+from .parser import GeneratorParser
 
 
 def _gen_ll_dict(data: list):
@@ -26,7 +26,7 @@ def _gen_ll_dict(data: list):
     return organized, non_term
 
 
-def _transform_grammar(grammar: dict, mapper: PredefinedParser):
+def _transform_grammar(grammar: dict, mapper: GeneratorParser):
     transformed_data = dict()
     for k,v in zip(grammar.keys(), grammar.values()):
         new_k = mapper.parse(k)[0][1]
@@ -45,9 +45,9 @@ class LL:
         organized_data, _ = _gen_ll_dict(data)
 
         if isinstance(word_list, (list, tuple)):
-            self.parser = PredefinedParser(word_list)
+            self.parser = GeneratorParser(word_list)
         else:
-            self.parser = PredefinedParser()
+            self.parser = GeneratorParser()
         
         self.grammar = _transform_grammar(organized_data, self.parser)
         self.non_terminal_set = list(self.grammar.keys())
@@ -149,3 +149,14 @@ class LL:
 
     def parse(self, data: str):
         pass
+
+
+class LLRewrite:
+    def __init__(self):
+        self.grammar = None
+        self.non_term = set()
+        self.characters = set()
+    
+    def load_grammar(data: list):
+        for 
+

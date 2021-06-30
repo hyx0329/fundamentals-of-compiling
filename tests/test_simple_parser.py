@@ -1,13 +1,13 @@
-from analyzer.grammar.parser import PredefinedParser
+from analyzer.grammar.parser.parser import GeneratorParser
 
 def test_parser():
-    parser = PredefinedParser()
+    parser = GeneratorParser()
     result = parser.parse('abcde')
     for r,i in zip(result, range(5)):
         assert r[1] == i, "Code mismatch {},{}".format(r[1], i)
 
 def test_parser_extra_symbol():
-    parser = PredefinedParser(['id'])
+    parser = GeneratorParser(['id'])
 
     table = parser.mapper
     assert len(set(table)) == len(table), "Mapper contains duplicate items"
@@ -22,7 +22,7 @@ def test_parser_extra_symbol():
         assert cid == cid_expected, "Unexpected symbol id for '{}'".format(symbol)
 
 def test_parser_empty_data():
-    parser = PredefinedParser()
+    parser = GeneratorParser()
     result = parser.parse('')
 
     assert result[0][0] == '', "Data mismatch!"

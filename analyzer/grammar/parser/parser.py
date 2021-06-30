@@ -1,13 +1,7 @@
 from analyzer.lexer.automation import NFA, DFA
 from analyzer.lexer.matcher import Matcher, BatchMatcher
-
-
-def _escaper(data: str):
-    """ Escape some characters """
-    symbols = ['\\', '+', '*', '?', '(', ')', '&', '|']
-    for char in symbols:
-        data = data.replace(char, '\\'+char)
-    return data
+from queue import deque
+from .utils import escaper as _escaper
 
 
 class SimpleParser:
@@ -55,7 +49,7 @@ class SimpleParser:
         return result
 
 
-class PredefinedParser(SimpleParser):
+class GeneratorParser(SimpleParser):
     predefined_symbols = (
         [chr(i) for i in range(ord('a'), ord('z')+1)]
         + [chr(i) for i in range(ord('A'), ord('Z')+1)]
@@ -63,7 +57,7 @@ class PredefinedParser(SimpleParser):
     )
 
     def __init__(self, extra_symbol = None):
-        """ 有默认符号集的解析器
+        """ 有默认符号集的产生式解析器
         
         :param extra_symbol: 额外的单词/符号
         """
@@ -71,4 +65,3 @@ class PredefinedParser(SimpleParser):
         if isinstance(extra_symbol, list):
             symbols += extra_symbol
         super().__init__(symbols)
-    
