@@ -1,3 +1,6 @@
+from queue import deque
+
+
 def escaper(data: str):
     """ Escape some characters """
     symbols = ['\\', '+', '*', '?', '(', ')', '&', '|']
@@ -71,11 +74,11 @@ def get_first_set(data):
     changed_flag = True
     while changed_flag:
         changed_flag = False
-        for key, v in zip(data.keys(), data.values()):
-            for subv in v:
+        for key, value in zip(data.keys(), data.values()):
+            for v in value:
                 addition = set()
                 before = set([''])
-                for k in subv:
+                for k in v:
                     after = record.get(k, set([k]))
                     if '' in before:
                         addition.update(after)
@@ -95,32 +98,69 @@ def get_follow_set(data, start=None):
     record = {k: set() for k in data.keys()}
     if start is None:
         start = next(iter(data.keys()))
-    record[start].add('TERM')
+    record[start].add('$')
+    eps_set = set([''])
+    empty_set = set()
     non_terms = set(data.keys())
-    changed_flag = True
     first_record = get_first_set(data)
-    while changed_flag:
-        changed_flag = False
-        for key, value in zip(data.keys(), data.values()):
-            for v in value:
-                first = v[0]
-                mid = [1]
-                for i in range(len(v) - 1):
-                    pass
+    
+    for key, value in zip(data.keys(), data.values()):
+        for v in value:
+            length = len(v)
+            if length < 2:
+                continue
+            for k1, k2 in zip(v[:-1], v[1:]):
+                record[k1] = record.get(k1, set()) | first_record.get(k2, set([k2])) - eps_set
 
+    # calculate constraints
+    constraints = set()
+    for key, value in zip(data.keys(), data.values()):
+        for v in value:
+            length = len(v)
+            if length > 0:
+                constraints.add((key, v[-1]))
+            for i in range(length-1, 0, -1):
+                k1 = v[i]
+                k1_set = first_record.get(k1, set([k1]))
+                if '' in k1_set:
+                    k2 = v[i-1]
+                    constraints.add((key, k2))
+                else:
+                    break
+    # cleanup constraints
+    removing = set()
+    for c in constraints:
+        if c[0] == c[1]:
+            removing.add(c)
+        elif c[1] not in non_terms:
+            removing.add(c)
+    constraints -= removing
+
+    # convert & apply constraints
+    converted = {k: set() for k in non_terms}
+    for c in constraints:
+        converted[c[1]].add(c[0])
+    # note: it cannot process constraints with circle(s)
+    # WILL STUCK!
+    current_finished = set()
+    while current_finished < non_terms:
+        for terminal, const in zip(converted.keys(), converted.values()):
+            if const <= current_finished:
+                for c in const:
+                    record[terminal].update(record[c])
+                current_finished.add(terminal)
+
+    return record, first_record
 
 
 if __name__ == "__main__":
     first_set_test = {
-        'S': ['aABe'],
-        'A': ['b','Abc'],
-        'B': ['d']
+        'L': ['E;L', ''],
+        'E': ['TG'],
+        'G': ['+TG', '-TG', ''],
+        'T': ['FH'],
+        'H': ['*FH', '/FH', r'%FH', ''],
+        'F': ['(E)', 'I', 'N']
     }
 
-    first_set_test_ans = {
-        'S': set(['a']),
-        'A': set(['b']),
-        'B': set(['d']),
-    }
-
-    ans = get_first_set(first_set_test)
+    ans = get_follow_set(first_set_test)
