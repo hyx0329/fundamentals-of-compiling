@@ -169,7 +169,18 @@ class LLOne:
             self._eliminate_direct_lr(non_term)
     
     def _left_factoring(self):
-        pass
+        G = self.grammar
+        changed_flag = True
+        while changed_flag:
+            changed_flag = False
+            to_add = dict()
+            for key, value in (G.keys(), G.values()):
+                sorted_value = sorted(value)
+                split_dict
+                index = 0
+                head = t
+                for t in sorted_value:
+                    pass
 
     def _generate_parsing_table(self):
         firsts = self.first_sets
