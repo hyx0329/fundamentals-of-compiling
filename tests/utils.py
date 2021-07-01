@@ -4,15 +4,16 @@ def print_table(rlabel, clabel, content, mapper=lambda x: x):
     assert isinstance(clabel, list), "No colume lable found!"
     assert len(content) == len(rlabel), "Invalid result !"
 
-
-    format_string = "{:>5}"
+    format_string = "{:>8}"
+    double_line = '========'
+    single_line = '--------'
 
     print()
     # 表头
     print('|', end='')
-    print(format_string.format('=====') + '|', end='')
+    print(format_string.format(double_line) + '|', end='')
     for _ in clabel:
-        print(format_string.format('====='), end='')
+        print(format_string.format(double_line), end='')
     print('|')
     print('|', end='')
     print(format_string.format('') + '|', end='')
@@ -21,9 +22,9 @@ def print_table(rlabel, clabel, content, mapper=lambda x: x):
         print(format_string.format(to_print), end='')
     print('|')
     print('|', end='')
-    print(format_string.format('-----') + '|', end='')
+    print(format_string.format(single_line) + '|', end='')
     for _ in clabel:
-        print(format_string.format('-----'), end='')
+        print(format_string.format(single_line), end='')
     print('|')
 
     # 内容
@@ -43,8 +44,8 @@ def print_table(rlabel, clabel, content, mapper=lambda x: x):
 
     # 尾巴分割线
     print('|', end='')
-    print(format_string.format('=====') + '|', end='')
+    print(format_string.format(double_line) + '|', end='')
     for _ in clabel:
-        print(format_string.format('====='), end='')
+        print(format_string.format(double_line), end='')
     print('|')
 

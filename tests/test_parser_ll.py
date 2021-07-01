@@ -13,6 +13,7 @@ def test_ll_no_recursion():
     mapper = ll_parser.parser.mapper
 
     assert len(characters) == len(mapper)
+    mapper_length = len(mapper)
 
     result_first_sets = ll_parser.first_sets
     result_follow_sets = ll_parser.follow_sets
@@ -24,19 +25,17 @@ def test_ll_no_recursion():
         if isinstance(x, int):
             if x < 0:
                 return ''
-            else:
+            elif x < mapper_length:
                 return mapper[x]
-        else:
-            return x
+        return x
     
     def map_to_real2(x):
         if isinstance(x, int):
             if x < 0:
                 return 'eps'
-            else:
+            elif x < mapper_length:
                 return mapper[x]
-        else:
-            return x
+        return x
     
     pairs = (
         (result_first_sets, converted_firsts),
@@ -60,3 +59,33 @@ def test_ll_no_recursion():
     print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
     for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
         print(k, v)
+
+
+def test_ll_more_complex():
+    test_set = test_data_two.raw_set_test
+    word_set = test_data_two.word_set
+    start_state = test_data_two.start_state
+    ll_parser = LLOne(test_set,
+                      word_list=word_set,
+                      start=start_state)
+    mapper = ll_parser.parser.mapper
+
+    assert len(word_set) == len(mapper)
+    mapper_length = len(mapper)
+
+    def map_to_real2(x):
+        if isinstance(x, int):
+            if x < 0:
+                return 'eps'
+            elif x < mapper_length:
+                return mapper[x]
+        return x
+    
+    print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
+    for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
+        print(k, v)
+
+
+def test_ll_has_recursion():
+    pass
+

@@ -173,25 +173,33 @@ class LLOne:
                 firsts = set()
                 length = len(prod)
                 empty = True
+                # for each A->alpha, calculate First(alpha)
                 for p in prod:
                     sub_first = self.first_sets.get(p, set([p]))
                     firsts.update(sub_first)
                     if -1 not in sub_first:
                         empty = False
                         break
+                # about empty string
                 if not empty:
                     firsts.difference_update(set(tuple([-1])))
                 else:
                     firsts.add(tuple([-1]))
+                # rule 1:
+                # for A->alpha, calculate First(alpha)
+                # for all terminal t in First(alpha), set T[A,t] to alpha
                 for terminal in self.pindex_t:
                     if terminal in firsts:
                         idx = self.pindex_t.index(terminal)
                         row[idx] = prod
-                    if tuple([-1]) in firsts:
-                        print(follow_set)
-                        for t in follow_set:
-                            idx = self.pindex_t.index(t)
-                            row[idx] = prod
+                # rule 2:
+                # if epsilon in First(alpha)
+                # for all terminal(include '$') t in Follow(A)
+                # set T[A,t] to alpha
+                if tuple([-1]) in firsts:
+                    for t in follow_set:
+                        idx = self.pindex_t.index(t)
+                        row[idx] = prod
             parsing_table.append(row)
         self.parsing_table = parsing_table
 
