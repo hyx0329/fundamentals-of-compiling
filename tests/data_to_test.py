@@ -8,7 +8,7 @@ class RgxTestData:
 
 
 class ParserTestData:
-    first_set_test = {
+    sample_set_test = {
         'L': ['E;L', ''],
         'E': ['TG'],
         'G': ['+TG', '-TG', ''],

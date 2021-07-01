@@ -34,19 +34,22 @@ def generate_parents(data: dict):
     return parents
 
 
-def prior_sort(parents: dict, initial_item=None):
+def prior_sort(data: dict, initial_item=None):
     """ 根据parents求近似的Topological sorting"""
-    non_terminal = set(parents.keys())
+    children = generate_children(data)
+    parents = generate_parents(children)
+    non_terminal = set(data.keys())
     read_order = sorted(non_terminal, key=lambda x: len(parents.get(x, set())))
     sequence = list()
     current_syms = set()
     empty_set = set()
 
     # hacky, just set an initial value
-    if initial_item is not None:
-        sequence.append(initial_item)
-        current_syms.add(initial_item)
-        read_order.remove(initial_item)
+    if initial_item is None:
+        initial_item = next(iter(data.keys()))
+    sequence.append(initial_item)
+    current_syms.add(initial_item)
+    read_order.remove(initial_item)
 
     while len(read_order) > 0:
         new_added = set()
@@ -58,6 +61,10 @@ def prior_sort(parents: dict, initial_item=None):
         for sym in new_added:
             read_order.remove(sym)
         current_syms.update(new_added)
+        # avoid loop stuck
+        if len(new_added) == 0:
+            sequence.append(read_order[0])
+            read_order.pop(0)
     
     return sequence
 
