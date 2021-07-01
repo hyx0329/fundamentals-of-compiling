@@ -32,3 +32,20 @@ class ParserTestData:
         'H': set(['+', '-', ';', ')']),
         'F': set(['+', '-', '*', '/', '%', ')', ';'])
     }
+    children_ans = {
+        'L': set(['E']),
+        'E': set(['T', 'G']),
+        'G': set(['T']),
+        'T': set(['F', 'H']),
+        'H': set(['F']),
+        'F': set(['E'])
+    }
+    parents_ans = {
+        'L': set(),
+        'E': set(['L', 'F']),
+        'G': set(['E']),
+        'T': set(['G', 'E']),
+        'H': set(['T']),
+        'F': set(['T','H'])
+    }
+    topological_like_order = ('L', 'E', 'G', 'T', 'H', 'F')

@@ -5,7 +5,7 @@
     + 其它符号都是终结符
 """
 
-from .parser import GeneratorParser
+from analyzer.lexer import GrammarLexer
 
 
 def _gen_ll_dict(data: list):
@@ -13,10 +13,13 @@ def _gen_ll_dict(data: list):
     nonterm_symbols = set()
     organized = dict()
 
+    # split
     for rule in data:
         non_term, replacements = rule.split('->')
         nonterm_symbols.add(non_term)
         organized[non_term] = replacements.split('|')
+    
+    # get all symbols(but only for single characters)
     for terms in organized.values():
         for single_term in terms:
             all_symbols.union(single_term)
@@ -26,41 +29,48 @@ def _gen_ll_dict(data: list):
     return organized, non_term
 
 
-def _transform_grammar(grammar: dict, mapper: GeneratorParser):
+def _transform_grammar(grammar: dict, mapper: GrammarLexer):
     transformed_data = dict()
     for k,v in zip(grammar.keys(), grammar.values()):
+        # get id for key
         new_k = mapper.parse(k)[0][1]
+        # get ids for content
         new_vs = list()
         for entry in v:
             new_entry = mapper.parse(entry)
-            new_trans = [i[1] for i in new_entry]
+            new_trans = (i[1] for i in new_entry)  # tuple, for set
             new_vs.append(new_trans)
-        transformed_data[new_k] = new_vs
+        transformed_data[new_k] = set(new_vs)  # yeah, set
     return transformed_data
 
 
-class LL:
-    def __init__(self, data:list, word_list:list = None, start: str = None):
-
+class LLOne:
+    def __init__(self, data:list, word_list:list = None, start: str = None, predefined=False):
+        # organize grammar data
         organized_data, _ = _gen_ll_dict(data)
 
+        # make a "lexer", so:
+        # syms -> nums
+        # strings -> tuples
+        # -> process human input <-
         if isinstance(word_list, (list, tuple)):
-            self.parser = GeneratorParser(word_list)
+            self.parser = GrammarLexer(word_list, predefined=predefined)
         else:
-            self.parser = GeneratorParser()
+            self.parser = GrammarLexer(predefined=True)
         
+        # thus regenerate all grammar
         self.grammar = _transform_grammar(organized_data, self.parser)
         self.non_terminal_set = list(self.grammar.keys())
 
-        # 准备新非终结符开始的ID, 供消除左递归时使用
+        # IDs for newly created non-terminals
         self._extra_non_term_from = len(self.parser.mapper) + 100
 
         if start is None:
             start = next(iter(self.organized_data.keys()))
 
         self.start_state = self.parser.mapper.index(start)
-        self.first_set = None
-        self.follow_set = None
+        self.first_sets = None
+        self.follow_sets = None
         self.parsing_table = None
 
     def _eliminate_direct_lr(self, non_terminal: int):
@@ -92,58 +102,29 @@ class LL:
             self.grammar[non_terminal] = part_no_recursion
             self.grammar[new_non_term] = part_have_recursion
 
-    def _eliminate_all_lr(self, grammar: dict):
+    def _eliminate_all_lr(self, grammar: dict, first_nt=None):
         # TODO: implement removing all left recursion
         # ref: https://en.wikipedia.org/wiki/Left_recursion#Removing_direct_left_recursion 
+        if first_nt is None:
+            first_nt = next(iter(grammar.keys()))
+        order = dict()
         all_non_terminals = self.non_terminal_set
         for non_term in all_non_terminals:
             change_flag = True
             while change_flag:
                 change_flag = False
-                for rule in self.grammar.get(non_term):
-                    pass
+                removes = set()
+                adds = set()
+                for production in self.grammar.get(non_term):
+                    if len(production) == 0:
+                        continue
+                    first_sym = production[0]
+                    if first_sym in non_term:
+                        removes.add(production)
+                        suffix = production[1:]
+                        # something
+                        
     
-    def _gen_first_set(self):
-        first_set = dict()
-        for key, value in zip(self.grammar.keys(), self.grammar.values()):
-            firsts = set()
-            for v in value:
-                if len(v) > 0:
-                    firsts.add(v[0])
-                else:
-                    firsts.add(None)
-            first_set[key] = firsts
-        
-        self.first_set = first_set
-
-    def _gen_follow_set(self):
-        if self.first_set is None:
-            self._gen_first_set()
-        
-        follow_set = dict()
-        for key in zip(self.grammar.keys()):
-            follow_set[key] = set()
-        
-        for value in zip(self.grammar.values):
-            follows = set()
-            for v in value:
-                if len(v) < 2:
-                    continue
-
-                p1 = v[0]
-                p2 = v[1]
-                if p1 in self.grammar.keys() and p2 in self.grammar.keys():
-                    # TODO: add follow rule 1
-                    pass
-
-        for key, value in zip(self.grammar.keys(), self.grammar.values()):
-            follows = list()
-            for v in value:
-                if len(v) > 1:
-                    # TODO: add follow rule 2
-                    pass
-            follow_set[key] = follows
-
     def _gen_parsing_table(self):
         pass
 

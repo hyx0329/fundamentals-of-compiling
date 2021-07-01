@@ -14,46 +14,49 @@ def generate_children(data: dict):
     non_terminal = set(data.keys())
     prior_graph = dict()
     for nt in non_terminal:
-        expand = data.get(nt)
+        production = data.get(nt)
         next_set = set()
-        for entry in expand:
+        for entry in production:
             for e in entry:
                 if e in non_terminal:
                     next_set.add(e)
-        prior_graph[nt] = next_set
+        prior_graph[nt] = next_set - set([nt])
     return prior_graph
 
 
 def generate_parents(data: dict):
     """通过孩子记录，求父母"""
-    non_terminal = set(data.keys())
     parents = {k: set() for k in data.keys()}
-    for k in data.keys:
-        for v in data.get(k):
-            parents[v].add(k)
+    for key, value in zip(data.keys(), data.values()):
+        for v in value:
+            parents[v] = parents.get(v, set())
+            parents[v].add(key)
     return parents
 
 
 def prior_sort(parents: dict, initial_item=None):
+    """ 根据parents求近似的Topological sorting"""
     non_terminal = set(parents.keys())
+    read_order = sorted(non_terminal, key=lambda x: len(parents.get(x, set())))
     sequence = list()
     current_syms = set()
     empty_set = set()
 
-    # hacky, avoid loop
+    # hacky, just set an initial value
     if initial_item is not None:
         sequence.append(initial_item)
         current_syms.add(initial_item)
-        non_terminal.remove(initial_item)
+        read_order.remove(initial_item)
 
-    while len(non_terminal) > 0:
+    while len(read_order) > 0:
         new_added = set()
-        for sym in non_terminal:
-            if current_syms <= parents.get(sym, empty_set):
+        for sym in read_order:
+            pset = parents.get(sym, empty_set)
+            if len(current_syms & pset) > 0 or len(pset) == 0:
                 sequence.append(sym)
                 new_added.add(sym)
         for sym in new_added:
-            non_terminal.remove(sym)
+            read_order.remove(sym)
         current_syms.update(new_added)
     
     return sequence
