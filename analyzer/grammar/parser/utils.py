@@ -140,15 +140,43 @@ def get_follow_set(data, start=None):
     converted = {k: set() for k in non_terms}
     for c in constraints:
         converted[c[1]].add(c[0])
+
+    # method 1: bottom-up, feeding parents
     # note: it cannot process constraints with circle(s)
     # WILL STUCK!
-    current_finished = set()
-    while current_finished < non_terms:
-        for terminal, const in zip(converted.keys(), converted.values()):
-            if const <= current_finished:
-                for c in const:
-                    record[terminal].update(record[c])
-                current_finished.add(terminal)
+    # current_finished = set()
+    # while current_finished < non_terms:
+    #     for terminal, const in zip(converted.keys(), converted.values()):
+    #         if const <= current_finished:
+    #             for c in const:
+    #                 record[terminal].update(record[c])
+    #             current_finished.add(terminal)
+
+    # method 2: closure
+    # ensure everyone is fed
+    # workaround the circulation
+    closure = {k:set() for k in non_terms}
+    for c in constraints:
+        closure[c[0]].add(c[1])
+    for key in closure.keys():
+        visit_queue = deque()
+        visited = {k: False for k in closure.keys()}
+        visit_queue.append(key)
+        while len(visit_queue) > 0:
+            newkey = visit_queue.popleft()
+            visited[newkey] = True
+            children = closure[newkey]
+            addition = set()
+            for k in children:
+                if visited[k]:
+                    continue
+                else:
+                    addition.add(k)
+                    visit_queue.append(k)
+            closure[key].update(addition)
+    for key, value in zip(closure.keys(), closure.values()):
+        for k in value:
+            record[k].update(record[key])
 
     return record, first_record
 
