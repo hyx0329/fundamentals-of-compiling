@@ -1,6 +1,7 @@
 from analyzer.grammar.parser.ll import LLOne
 from .data_to_test import ParserTestData as test_data_one
 from .data_to_test_ll import LLTestData as test_data_two
+from .utils import print_table
 
 
 def test_ll_no_recursion():
@@ -28,6 +29,15 @@ def test_ll_no_recursion():
         else:
             return x
     
+    def map_to_real2(x):
+        if isinstance(x, int):
+            if x < 0:
+                return 'eps'
+            else:
+                return mapper[x]
+        else:
+            return x
+    
     pairs = (
         (result_first_sets, converted_firsts),
         (result_follow_sets, converted_follows)
@@ -47,3 +57,6 @@ def test_ll_no_recursion():
         for key in ans.keys():
             assert ret.get(key) == ans.get(key), key
     
+    print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
+    for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
+        print(k, v)

@@ -8,6 +8,7 @@ class RgxTestData:
 
 
 class ParserTestData:
+    start_state = 'L'
     raw_set_test = {
         'L->E;L|',
         'E->TG',
