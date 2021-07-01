@@ -1,6 +1,7 @@
 from analyzer.grammar.parser.ll import LLOne
 from .data_to_test import ParserTestData as test_data_one
 from .data_to_test_ll import LLTestData as test_data_two
+from .data_to_test_ll import LLTestDataWithRecursion
 from .utils import print_table
 
 
@@ -84,8 +85,23 @@ def test_ll_more_complex():
     print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
     for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
         print(k, v)
+    
+    for testin, expect in test_data_two.test_inputs:
+        result, pos = ll_parser.parse(testin)
+        assert result == expect, pos
 
 
 def test_ll_has_recursion():
-    pass
+    test_set = LLTestDataWithRecursion.raw_set_test
+    word_set = LLTestDataWithRecursion.word_set
+    test_inputs = LLTestDataWithRecursion.test_inputs
+    start_state = LLTestDataWithRecursion.start_state
+    
+    ll_parser = LLOne(test_set,
+                      word_list=word_set,
+                      start=start_state)
 
+    for testin, expect, epos in LLTestDataWithRecursion.test_inputs:
+        result, pos = ll_parser.parse(testin)
+        assert pos == epos, pos
+        assert result == expect, pos

@@ -91,17 +91,23 @@ class LLOne:
         
         # eliminate left recursion
         self._eliminate_all_lr()
+        # left factoring
+        self._left_factoring()
 
         if start is None:
             start = next(iter(self.organized_data.keys()))
 
         self.follow_sets, self.first_sets = get_follow_set(self.grammar, start=self.start_state, eps_content=-1, end_content=self.end_str_flag)
+        self._original_state_count = len(self.word_list)
         self.parsing_table = None
+        
+        # table index
         self.pindex_n = list(self.non_terminal_set)                     # non-terminals
         self.pindex_t = set(map(lambda x: self.parser.mapper.index(x), self.word_list))
         self.pindex_t.difference_update(self.pindex_n)
         self.pindex_t = list(self.pindex_t)
         self.pindex_t.append(self.end_str_flag)  # terminals
+        # table
         self._generate_parsing_table()
 
     def _eliminate_direct_lr(self, non_terminal):
@@ -116,7 +122,7 @@ class LLOne:
             if len(entry) == 0:
                 break  # cannot process empty substring
             if entry[0] == non_terminal:
-                part_have_recursion.add(entry[1:])
+                part_have_recursion.add(entry[1:] + tuple([new_non_terminal]))
             else:
                 part_no_recursion.add(entry + tuple([new_non_terminal]))
         
@@ -125,7 +131,8 @@ class LLOne:
             part_have_recursion.add(tuple([-1]))  # 加一个空
 
             self.grammar[non_terminal] = part_no_recursion
-            self.grammar[new_non_term] = part_have_recursion
+            self.grammar[new_non_terminal] = part_have_recursion
+            self.non_terminal_set.append(new_non_terminal)
 
     def _eliminate_all_lr(self):
         # TODO: implement removing all left recursion
@@ -160,6 +167,9 @@ class LLOne:
                     to_change.difference_update(removes)
                     to_change.update(adds)
             self._eliminate_direct_lr(non_term)
+    
+    def _left_factoring(self):
+        pass
 
     def _generate_parsing_table(self):
         firsts = self.first_sets
@@ -204,7 +214,47 @@ class LLOne:
         self.parsing_table = parsing_table
 
     def parse(self, data: str):
-        pass
+        # convert string to a symbol stream
+        symbol_list = self.parser.parse(data)
+        # then convert to a stack
+        input_syms = list(symbol_list)
+        input_syms.append(('$', '$'))  # end
+        input_syms.reverse()
+        # setup initial state stack
+        state_stack = list()
+        state_stack.append('$')
+        state_stack.append(self.start_state)
+        
+        while len(state_stack) > 0 and len(input_syms) > 0:
+            state_id = state_stack[-1]
+            symbol = input_syms[-1]
+            symbol_id = symbol[1]
+            if state_id == symbol_id:
+                state_stack.pop()
+                input_syms.pop()
+            else:
+                if state_id not in self.non_terminal_set:
+                    return False, symbol[0]
+                if isinstance(symbol_id, int):
+                    if symbol_id == self._original_state_count:
+                        return False, symbol[0]
+                state_idx = self.pindex_n.index(state_id)
+                symbol_idx = self.pindex_t.index(symbol_id)
+                choices = self.parsing_table[state_idx]
+                choice = choices[symbol_idx]
+                if choice is None:
+                    return False, symbol[0]
+                if -1 in choice:
+                    state_stack.pop()
+                else:
+                    state_stack.pop()
+                    for i in range(len(choice)-1, -1, -1):
+                        state_stack.append(choice[i])
+        
+        if len(state_stack) == len(input_syms) == 0:
+            return True, '$'
+        else:
+            return False, '$'
 
 
 class LLRewrite:
