@@ -48,6 +48,9 @@ class SimpleLexer(BaseLexer):
         self._matchers = None
         self._batch_matcher = None
         
+        if len(self._regexs) > 0:
+            self._prepare()
+        
     def _prepare(self):
         self._matchers = list()
         for rgx in self._regexs:
@@ -56,6 +59,9 @@ class SimpleLexer(BaseLexer):
             matcher = dfa.minimize().get_matcher()
             self._matchers.append(matcher)
         self._batch_matcher = BatchMatcher(self._matchers)
+
+    def parse(self, data:str):
+        return self.consume(data)
 
     def consume(self, data: str):
         """Convert input to a symbol stream
@@ -85,12 +91,12 @@ class GrammarLexer(SimpleLexer):
         :param predefined: 使用内置符号集
         """
         symbols = set()
-        if isinstance(extra_symbol, list):
+        if isinstance(extra_symbols, (set, tuple, list)):
             symbols.update(extra_symbols)
         if predefined:
             symbols.update(self.predefined_symbols)
         assert len(symbols) > 0, "Input Error"
-
+        
         super().__init__(list(symbols))
 
 

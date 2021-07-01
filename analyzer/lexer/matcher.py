@@ -88,6 +88,8 @@ class BatchMatcher:
 
         assert isinstance(data, str), "Invalid Input!"
 
+        self.reset()
+        
         symbol_list = list()
         read_pos = 0
         string_length = len(data)

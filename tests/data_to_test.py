@@ -8,6 +8,14 @@ class RgxTestData:
 
 
 class ParserTestData:
+    raw_set_test = {
+        'L->E;L|',
+        'E->TG',
+        'G->+TG|-TG|',
+        'T->FH',
+        r'H->*FH|/FH|%FH|',
+        'F->(E)|I|N'
+    }
     sample_set_test = {
         'L': ['E;L', ''],
         'E': ['TG'],

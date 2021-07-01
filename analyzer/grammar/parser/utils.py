@@ -78,7 +78,11 @@ def loop_detect(children, item):
         # TODO: loopdetect
 
 
-def get_first_set(data):
+def get_first_set(data, eps_content=''):
+    """ 计算first集合
+    :param eps_content: 代表"空(epsilon)"内容
+    :return: 各个非终结符的first集合
+    """
     record = {k: set() for k in data.keys()}
     non_terms = set(data.keys())
     changed_flag = True
@@ -87,16 +91,16 @@ def get_first_set(data):
         for key, value in zip(data.keys(), data.values()):
             for v in value:
                 addition = set()
-                before = set([''])
+                before = set([eps_content])
                 for k in v:
                     after = record.get(k, set([k]))
-                    if '' in before:
+                    if eps_content in before:
                         addition.update(after)
                         before = after
                     else:
                         break
-                if '' in before:
-                    addition.add('')
+                if eps_content in before:
+                    addition.add(eps_content)
                 if record[key] >= addition:
                     continue
                 changed_flag = True
@@ -104,15 +108,20 @@ def get_first_set(data):
     return record
 
 
-def get_follow_set(data, start=None):
+def get_follow_set(data, start=None, eps_content='', end_content='$'):
+    """ 生成follow集合
+    :param start: 开始状态（有必要，否则随机选取，结果不稳定）
+    :param eps_content: 代表"空(epsilon)"内容
+    :param end_content: 代表"字符串末尾"的内容
+    :return: follow sets, first sets"""
     record = {k: set() for k in data.keys()}
     if start is None:
         start = next(iter(data.keys()))
-    record[start].add('$')
-    eps_set = set([''])
+    record[start].add(end_content)
+    eps_set = set([eps_content])
     empty_set = set()
     non_terms = set(data.keys())
-    first_record = get_first_set(data)
+    first_record = get_first_set(data, eps_content=eps_content)
     
     for key, value in zip(data.keys(), data.values()):
         for v in value:
@@ -132,7 +141,7 @@ def get_follow_set(data, start=None):
             for i in range(length-1, 0, -1):
                 k1 = v[i]
                 k1_set = first_record.get(k1, set([k1]))
-                if '' in k1_set:
+                if eps_content in k1_set:
                     k2 = v[i-1]
                     constraints.add((key, k2))
                 else:
