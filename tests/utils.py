@@ -1,4 +1,8 @@
-def print_table(rlabel, clabel, content, mapper=lambda x: x):
+def print_table(rlabel,
+                clabel,
+                content,
+                xmapper=lambda x: x,
+                ymapper=lambda x: x):
     """打印表格"""
     assert isinstance(rlabel, list), "No row label found!"
     assert isinstance(clabel, list), "No colume lable found!"
@@ -18,7 +22,7 @@ def print_table(rlabel, clabel, content, mapper=lambda x: x):
     print('|', end='')
     print(format_string.format('') + '|', end='')
     for query in clabel:
-        to_print = mapper(query)
+        to_print = xmapper(query)
         print(format_string.format(to_print), end='')
     print('|')
     print('|', end='')
@@ -30,16 +34,22 @@ def print_table(rlabel, clabel, content, mapper=lambda x: x):
     # 内容
     for label, cont in zip(rlabel,content):
         print('|', end='')
-        to_print = mapper(label)
+        to_print = ymapper(label)
         print(format_string.format(to_print), end='')
         print('|', end='')
 
         for v in cont:
             if v is None:
                 print(format_string.format(' '), end='')
-            else:
+            elif isinstance(v, (tuple, list)):
                 to_print = ''.join(map(mapper, v))
                 print(format_string.format(to_print), end='')
+            elif isinstance(v, set):
+                str_list = [''.join(map(str, i)) for i in v]
+                to_print = ','.join(str_list)
+                print(format_string.format(to_print), end='')
+            else:
+                print(format_string.format(' '), end='')
         print('|')
 
     # 尾巴分割线

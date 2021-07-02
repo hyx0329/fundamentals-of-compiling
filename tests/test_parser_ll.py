@@ -57,9 +57,9 @@ def test_ll_no_recursion():
         for key in ans.keys():
             assert ret.get(key) == ans.get(key), key
     
-    print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
-    for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
-        print(k, v)
+    # print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
+    # for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
+    #     print(k, v)
 
 
 def test_ll_more_complex():
@@ -82,9 +82,9 @@ def test_ll_more_complex():
                 return mapper[x]
         return x
     
-    print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
-    for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
-        print(k, v)
+    # print_table(ll_parser.pindex_n, ll_parser.pindex_t, ll_parser.parsing_table, map_to_real2)
+    # for k, v in zip(ll_parser.grammar.keys(), ll_parser.grammar.values()):
+    #     print(k, v)
     
     for testin, expect in test_data_two.test_inputs:
         result, pos = ll_parser.parse(testin)
