@@ -7,46 +7,7 @@
 
 from analyzer.lexer import GrammarLexer
 from .utils import get_first_set, get_follow_set, prior_sort
-
-
-def _gen_ll_dict(data: list):
-    all_symbols = set()
-    nonterm_symbols = set()
-    organized = dict()
-
-    # split
-    for rule in data:
-        non_term, replacements = rule.split('->')
-        nonterm_symbols.add(non_term)
-        organized[non_term] = replacements.split('|')
-    
-    # get all symbols(but only for single characters)
-    for terms in organized.values():
-        for single_term in terms:
-            all_symbols.union(single_term)
-    
-    all_symbols = all_symbols.union(non_term)
-
-    return organized, non_term
-
-
-def _transform_grammar(grammar: dict, mapper: GrammarLexer):
-    transformed_data = dict()
-    for k,v in zip(grammar.keys(), grammar.values()):
-        # get id for key
-        new_k = mapper.parse(k)[0][1]
-        # get ids for content
-        new_vs = list()
-        for entry in v:
-            new_entry = mapper.parse(entry)
-            new_trans = tuple(i[1] for i in new_entry)  # tuple, for set
-            new_vs.append(new_trans)
-        transformed_data[new_k] = set(new_vs)  # yeah, set
-    # print()
-    # for k,v in zip(transformed_data.keys(), transformed_data.values()):
-    #     print(k, v)
-    # print()
-    return transformed_data
+from .utils import transform_grammar, gen_ll_dict
 
 
 class LLOne:
@@ -66,7 +27,7 @@ class LLOne:
         :param end_string_flag: 在表中标记字符串末尾，默认'$'
         """
         # organize grammar data
-        organized_data, _ = _gen_ll_dict(data)
+        organized_data, _ = gen_ll_dict(data)
 
         # make a "lexer", so:
         # syms -> nums
@@ -80,7 +41,7 @@ class LLOne:
         # thus regenerate all grammar
         self.word_list = word_list
         self.end_str_flag = end_str_flag
-        self.grammar = _transform_grammar(organized_data, self.parser)
+        self.grammar = transform_grammar(organized_data, self.parser)
         self.non_terminal_set = list(self.grammar.keys())
 
         # IDs for newly created non-terminals
@@ -174,11 +135,10 @@ class LLOne:
         while changed_flag:
             changed_flag = False
             to_add = dict()
-            for key, value in (G.keys(), G.values()):
+            for key, value in zip(G.keys(), G.values()):
                 sorted_value = sorted(value)
-                split_dict
+                split_dict = dict()
                 index = 0
-                head = t
                 for t in sorted_value:
                     pass
 
@@ -225,6 +185,9 @@ class LLOne:
         self.parsing_table = parsing_table
 
     def parse(self, data: str):
+        """ 判断data是否满足文法
+        :param data: 输入字符串
+        :return: [bool, word] bool为结果，word是最后处理的单词"""
         # convert string to a symbol stream
         symbol_list = self.parser.parse(data)
         # then convert to a stack

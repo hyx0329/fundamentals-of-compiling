@@ -1,4 +1,5 @@
 from queue import deque
+from analyzer.lexer import GrammarLexer
 
 
 def escaper(data: str):
@@ -198,6 +199,49 @@ def get_follow_set(data, start=None, eps_content='', end_content='$'):
             record[k].update(record[key])
 
     return record, first_record
+
+
+def gen_ll_dict(data: list):
+    """ 将输入数据转换为字典，分隔符`->`以及`|`"""
+    all_symbols = set()
+    nonterm_symbols = set()
+    organized = dict()
+
+    # split
+    for rule in data:
+        non_term, replacements = rule.split('->')
+        nonterm_symbols.add(non_term)
+        organized[non_term] = replacements.split('|')
+    
+    # get all symbols(but only for single characters)
+    for terms in organized.values():
+        for single_term in terms:
+            all_symbols.union(single_term)
+    
+    all_symbols = all_symbols.union(non_term)
+
+    return organized, non_term
+
+
+def transform_grammar(grammar: dict, mapper: GrammarLexer):
+    """ 将grammar中的各个元素用mapper转换为记号流
+    """
+    transformed_data = dict()
+    for k,v in zip(grammar.keys(), grammar.values()):
+        # get id for key
+        new_k = mapper.parse(k)[0][1]
+        # get ids for content
+        new_vs = list()
+        for entry in v:
+            new_entry = mapper.parse(entry)
+            new_trans = tuple(i[1] for i in new_entry)  # tuple, for set
+            new_vs.append(new_trans)
+        transformed_data[new_k] = set(new_vs)  # yeah, set
+    # print()
+    # for k,v in zip(transformed_data.keys(), transformed_data.values()):
+    #     print(k, v)
+    # print()
+    return transformed_data
 
 
 if __name__ == "__main__":
