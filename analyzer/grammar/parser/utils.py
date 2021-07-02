@@ -244,6 +244,27 @@ def transform_grammar(grammar: dict, mapper: GrammarLexer):
     return transformed_data
 
 
+def left_factoring(data):
+    single = set()
+    split_dict = dict()
+    for item in data:
+        if len(item) == 0:
+            single.add(item)
+        else:
+            split_dict[item[0]] = split_dict.get(item[0], set())
+            split_dict[item[0]].add(item[1:])
+    to_remove = list()
+    for key in split_dict:
+        value = split_dict[key]
+        if len(value) == 1:
+            for v in value:
+                single.add(tuple([key]) + v)
+                to_remove.append(key)
+    for key in to_remove:
+        split_dict.pop(key)
+    return split_dict, single
+
+
 if __name__ == "__main__":
     first_set_test = {
         'L': ['E;L', ''],

@@ -8,6 +8,7 @@
 from analyzer.lexer import GrammarLexer
 from .utils import get_first_set, get_follow_set, prior_sort
 from .utils import transform_grammar, gen_ll_dict
+from .utils import left_factoring
 
 
 class LLOne:
@@ -130,17 +131,34 @@ class LLOne:
             self._eliminate_direct_lr(non_term)
     
     def _left_factoring(self):
+        """ 提取左因子
+        缺点: 每次仅消去一位
+        """
         G = self.grammar
         changed_flag = True
         while changed_flag:
             changed_flag = False
-            to_add = dict()
-            for key, value in zip(G.keys(), G.values()):
-                sorted_value = sorted(value)
-                split_dict = dict()
-                index = 0
-                for t in sorted_value:
-                    pass
+
+            to_update = dict()
+
+            for key in G.keys():
+                value = G.get(key)
+                split1, split2 = left_factoring(value)
+                if len(split1) > 0:
+                    for key in split1:
+                        # introduce new non terminals
+                        new_non_terminal = self._extra_non_term_from
+                        self._extra_non_term_from += 1
+                        self.non_terminal_set.append(new_non_terminal)
+
+                        to_update[new_non_terminal] = split1.get(key)
+                        split2.add(tuple([key, new_non_terminal]))
+                    G[key] = split2
+            
+            if len(to_update) > 0:
+                changed_flag = True
+                for key, value in zip(to_update.keys(), to_update.values()):
+                    G[key] = value
 
     def _generate_parsing_table(self):
         firsts = self.first_sets
