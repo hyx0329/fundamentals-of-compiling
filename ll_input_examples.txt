@@ -1,0 +1,19 @@
+# example1
+E->E-T|T
+T->T*F|F
+F->-F|id
+
+E
+E,T,F,-,*,id
+id-id*id
+id*id-
+
+# example2
+S->aABe
+A->b|Abc
+B->d
+
+S
+S,A,B,a,b,c,d,e
+abcde
+abbcde
