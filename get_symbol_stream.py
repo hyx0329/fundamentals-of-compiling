@@ -1,5 +1,5 @@
-from analyzer.generator.automation import NFA, DFA
-from analyzer.generator.matcher import Matcher, MatcherState, BatchMatcher
+from analyzer.lexer.automation import NFA, DFA
+from analyzer.lexer.matcher import Matcher, MatcherState, BatchMatcher
 
 FUNCTIONS = 'sin|cos|tg|ctg|lg|log|ln'
 OPERATORS = '^|\+|-|\*|/|='

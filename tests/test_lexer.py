@@ -1,8 +1,9 @@
 import pytest
 import re
 
-from analyzer.generator.automation import NFA, DFA
-from .data_to_test import DataToTest
+from analyzer.lexer.automation import NFA, DFA
+from analyzer.lexer import SimpleLexer
+from .data_to_test import RgxTestData as DataToTest
 
 def test_overall():
     data_to_test = DataToTest.value
@@ -18,3 +19,8 @@ def test_overall():
             result1, _ = dfa.match(tdata)
             result2 = False if re_matcher.match(tdata) is None else True
             assert result1 == result2, ' '.join((regex, tdata))
+
+
+def test_simplelexer():
+    test_data = None
+    

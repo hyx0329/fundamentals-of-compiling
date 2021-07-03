@@ -82,12 +82,14 @@ class BatchMatcher:
         将字符串转换为记号流
 
         :param data: 输入字符串
-
+        :return: [[char1, id1], [char2, id2], ... ]
         记号编号根据matcher顺序自动生成
         """
 
         assert isinstance(data, str), "Invalid Input!"
 
+        self.reset()
+        
         symbol_list = list()
         read_pos = 0
         string_length = len(data)
