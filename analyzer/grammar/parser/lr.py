@@ -110,7 +110,7 @@ def cal_reduce(grammar, start, items_list):
 
 
 class SLRAutomation:
-    def __init__(self, data:list, word_list:(set, tuple, list) = None, start: str = None, predefined=False, end_str_flag='$'):
+    def __init__(self, data:set, word_list:(set, tuple, list) = None, start: str = None, predefined=False, end_str_flag='$'):
         """
         :param data:        产生式数据, 多个产生式string
         :param word_list:   单词表, 多个string, 此外空字符不必包含在内
