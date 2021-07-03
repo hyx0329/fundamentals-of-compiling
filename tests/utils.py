@@ -2,7 +2,8 @@ def print_table(rlabel,
                 clabel,
                 content,
                 xmapper=lambda x: x,
-                ymapper=lambda x: x):
+                ymapper=lambda x: x,
+                cmapper=lambda x: x):
     """打印表格"""
     assert isinstance(rlabel, list), "No row label found!"
     assert isinstance(clabel, list), "No colume lable found!"
@@ -42,7 +43,8 @@ def print_table(rlabel,
             if v is None:
                 print(format_string.format(' '), end='')
             elif isinstance(v, (tuple, list)):
-                to_print = ''.join(map(mapper, v))
+                vs = map(cmapper, v)
+                to_print = ''.join(map(str, vs))
                 print(format_string.format(to_print), end='')
             elif isinstance(v, set):
                 str_list = [''.join(map(str, i)) for i in v]
