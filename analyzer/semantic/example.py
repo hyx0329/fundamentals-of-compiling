@@ -5,10 +5,11 @@ from copy import deepcopy
 
 class ArithmeticAnalysis(SLRAutomation):
     grammar = {
-        'E->E+F|E*F|F',
-        'F->-F|id'
+        'E->E+T|T',
+        'T->T*F|F',
+        'F->(E)|-F|id'
     }
-    word_list = 'E,F,id,(,),*,+,-'.split(',')
+    word_list = 'E,T,F,id,(,),*,+,-'.split(',')
     start_nt = 'E'
     regexs = {
         'id': '(1|2|3|4|5|6|7|8|9)(0|1|2|3|4|5|6|7|8|9)*',
@@ -20,12 +21,13 @@ class ArithmeticAnalysis(SLRAutomation):
     }
 
     rules = {
-        'E+F': ('add', 0, 2, 'new'),
-        'E*F': ('times', 0, 2, 'new'),
+        'E+T': ('add', 0, 2, 'new'),
+        'T*F': ('times', 0, 2, 'new'),
         '(E)': ('let', 1, -1, 'new'),
         '-F': ('invert', 1, -1, 'new'),
         'id': ('let', 0, -1, 'new'),
-        'F': ('let', 0, -1, 'new')
+        'F': ('let', 0, -1, 'new'),
+        'T': ('let', 0, -1, 'new')
     }
 
 
