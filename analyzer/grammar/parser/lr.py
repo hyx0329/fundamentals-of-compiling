@@ -20,15 +20,16 @@ def slr_closure(data, grammar):
     return set(items)  # set
 
 
-def get_argumented_grammar(grammar, start, symbols):
-    """
+def get_prefix_dfa(grammar, start, symbols):
+    """ 获取前缀分析DFA
     :param grammar: 语法
     :param start: 开始状态
     :param symbols: 所有符号(不包括文末记号)
+    :return: (items, transisions) DFA状态列表, 状态转移
     """
     # assume already added an extra start state
     ItemsList = list()  # order is REQUIRED, so MUST be a list
-    StatesList = list()  # DFA
+    TransitionList = list()  # DFA
     initials = list()
     item_products = grammar.get(start)
     assert len(item_products) == 1
@@ -62,7 +63,7 @@ def get_argumented_grammar(grammar, start, symbols):
             if new_item not in ItemsList:
                 ItemsList.append(new_item)
 
-            StatesList.append(
+            TransitionList.append(
                 tuple([
                     action, 
                     ItemsList.index(con_item),
@@ -71,7 +72,7 @@ def get_argumented_grammar(grammar, start, symbols):
                 ])
             )
             
-    return ItemsList, StatesList
+    return ItemsList, TransitionList
 
 
 def cal_reduce(grammar, start, items_list):
@@ -170,7 +171,7 @@ class SLRAutomation:
         self.parsing_table = None
         self.reducable_table = None
         self.reducable_items = None
-        self.items_list, self.states_list = get_argumented_grammar(self.grammar, self.start_state, self.pindex_t[:-1] + self.pindex_n)
+        self.items_list, self.states_list = get_prefix_dfa(self.grammar, self.start_state, self.pindex_t[:-1] + self.pindex_n)
         self.acc_state = -1
         self._generate_parsing_table()
 
