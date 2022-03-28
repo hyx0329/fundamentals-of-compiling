@@ -62,6 +62,14 @@ if __name__ == "__main__":
     mapper_length = len(mapper)
     parsing_table = slr_parser.parsing_table
 
+    def map_to_real(x):
+        if isinstance(x, int):
+            if x < 0:
+                return ''
+            elif x < mapper_length:
+                return mapper[x]
+        return x
+
     def map_to_real2(x):
         if isinstance(x, int):
             if x < 0:
@@ -69,7 +77,34 @@ if __name__ == "__main__":
             elif x < mapper_length:
                 return mapper[x]
         return x
+    
+    converted_firsts = dict()
+    converted_follows = dict()
+    result_first_sets = slr_parser.first_sets
+    result_follow_sets = slr_parser.follow_sets
 
+    pairs = (
+        (result_first_sets, converted_firsts),
+        (result_follow_sets, converted_follows)
+    )
+
+    for source, target in pairs:
+        for key, value in zip(source.keys(), source.values()):
+            converted_value = set(map(map_to_real, value))
+            ckey = mapper[key]
+            target[ckey] = converted_value
+
+    print("Firsts:")
+    for key in converted_firsts:
+        value = converted_firsts.get(key)
+        print(key, value)
+    print()
+    print("Follows:")
+    for key in converted_follows:
+        value = converted_follows.get(key)
+        print(key, value)
+    print()
+    
     print("ID, non-terminal, and correspoding reduce count:")
     for i, var in enumerate(slr_parser.reducable_items):
         print(i, '\t', map_to_real2(var[0]), '\t', len(var[1]))
